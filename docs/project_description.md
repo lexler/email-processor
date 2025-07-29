@@ -12,7 +12,7 @@ This is a process written in the R programming language that is going to automat
 
 ## Sample Ingestion Email
 From: <clinitian@123.clinic>
-Subj: Behavioral Observation Results
+Subj: [PCIT Intermediary]
 Body:
 ```
 Questionnaire: yes
@@ -28,6 +28,4 @@ Store data in DB
 
 ## Backing Data
 Need a backend table to link an email address with a specific clinic name.
-
-
 
