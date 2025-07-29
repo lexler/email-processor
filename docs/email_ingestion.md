@@ -6,3 +6,15 @@
 5. In R process, ingest the message file and process it
 
 # Process diagram
+
+```mermaid
+flowchart TD
+    A[Email sent to Rachel<br/>Subject: PCIT Intermediary] --> B[Outlook Rule Triggers]
+    B --> C[Email moved to<br/>PCIT Automated folder]
+    C --> D[Windows Task Scheduler<br/>runs once a day]
+    D --> E[PowerShell Script<br/>export-emails.ps1]
+    E --> F[Email saved as<br/>.msg file to disk]
+    F --> G[Email moved to<br/>PCIT-Processed folder]
+    G --> H[R Script monitors<br/>inbox folder]
+    H --> I[Parse .msg file<br/>extract key-value pairs]
+```
