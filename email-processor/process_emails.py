@@ -2,6 +2,8 @@
 
 import os
 import glob
+import csv
+import shutil
 from pathlib import Path
 import extract_msg
 from datetime import datetime
@@ -48,7 +50,49 @@ def parse_message_content(body):
     }
 
 
-def process_single_email(file_path):
+def write_to_csv(file_name, sender, date, questionnaire, homework, coding_analysis, raw_body, csv_file="emails.csv"):
+    """Write email data to CSV file, creating it if it doesn't exist"""
+    file_exists = os.path.isfile(csv_file)
+    
+    with open(csv_file, 'a', newline='', encoding='utf-8') as csvfile:
+        fieldnames = ['file_name', 'sender', 'date', 'questionnaire', 'homework', 'coding_analysis', 'raw_body']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        if not file_exists:
+            writer.writeheader()
+            print(f"Created new CSV file: {csv_file}")
+        
+        writer.writerow({
+            'file_name': file_name,
+            'sender': sender,
+            'date': date,
+            'questionnaire': questionnaire,
+            'homework': homework,
+            'coding_analysis': coding_analysis,
+            'raw_body': raw_body.replace('\n', ' | ') if raw_body else ''
+        })
+        print(f"Appended to CSV file: {csv_file}")
+
+
+def ensure_processed_directory(inbox_path):
+    """Create processed directory if it doesn't exist"""
+    processed_dir = os.path.join(inbox_path, "processed")
+    if not os.path.exists(processed_dir):
+        os.makedirs(processed_dir)
+        print(f"Created processed directory: {processed_dir}")
+    return processed_dir
+
+
+def move_processed_file(file_path, processed_dir):
+    """Move processed file to the processed directory"""
+    filename = os.path.basename(file_path)
+    new_path = os.path.join(processed_dir, filename)
+    shutil.move(file_path, new_path)
+    print(f"Moved file to: {new_path}")
+    return new_path
+
+
+def process_single_email(file_path, inbox_path):
     """Process a single email message and extract basic info"""
     try:
         msg = extract_msg.Message(file_path)
@@ -65,6 +109,23 @@ def process_single_email(file_path):
         print(f"Questionnaire: {parsed_data['questionnaire']}")
         print(f"Asked about homework: {parsed_data['homework']}")
         print(f"Did coding analysis: {parsed_data['coding_analysis']}")
+        print(f"Message content: {body[:200]}..." if len(body) > 200 else f"Message content: {body}")
+        
+        # Write to CSV
+        write_to_csv(
+            file_name=os.path.basename(file_path),
+            sender=sender,
+            date=received_time.strftime('%Y-%m-%d %H:%M:%S'),
+            questionnaire=parsed_data['questionnaire'],
+            homework=parsed_data['homework'],
+            coding_analysis=parsed_data['coding_analysis'],
+            raw_body=body
+        )
+        
+        # Move file to processed directory
+        processed_dir = ensure_processed_directory(inbox_path)
+        move_processed_file(file_path, processed_dir)
+        
         print("---")
         
         msg.close()
@@ -86,7 +147,7 @@ def main():
     print(f"Found {msg_count} .msg files in {inbox_path}\n")
     
     for file_path in msg_files:
-        process_single_email(file_path)
+        process_single_email(file_path, inbox_path)
     
     return 0
 
