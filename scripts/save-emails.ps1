@@ -23,7 +23,7 @@ function Process-EmailBatch {
         $mail.Move($processedFolder)
     }
     
-    return $entryIds.Count
+    return [int]$entryIds.Count
 }
 
 $outlook = New-Object -ComObject Outlook.Application
