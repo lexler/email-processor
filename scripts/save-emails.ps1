@@ -16,11 +16,13 @@ function Process-EmailBatch {
     Write-Host "Processing batch of $($entryIds.Count) emails"
     
     # Process each email by EntryID
+	$count = 1
     foreach($entryId in $entryIds) {
         $mail = $namespace.GetItemFromID($entryId)
-        $filename = "C:\Users\wilsora3\Documents\PCIT Automated\$($mail.ReceivedTime.ToString('yyyyMMdd_HHmmss')).msg"
-        $mail.SaveAs($filename, 3)  # 3 = MSG format
-        $mail.Move($processedFolder)
+        $filename = "C:\Users\wilsora3\Documents\PCIT Automated\$($mail.ReceivedTime.ToString('yyyyMMdd_HHmmss'))_$($count).msg"
+        $mail.SaveAs($filename, 3)| Out-Null  # 3 = MSG format
+        $mail.Move($processedFolder)| Out-Null
+		$count += 1
     }
     
     return [int]$entryIds.Count
