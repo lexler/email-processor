@@ -92,15 +92,7 @@ process_msg_file <- function(file_path) {
       cat("Appended to CSV file:", CSV_FILE, "\n")
     }
     
-    processed_dir <- file.path(dirname(file_path), "processed")
-    if (!dir.exists(processed_dir)) {
-      dir.create(processed_dir, recursive = TRUE)
-      cat("Created processed directory:", processed_dir, "\n")
-    }
-    
-    new_path <- file.path(processed_dir, basename(file_path))
-    file.rename(file_path, new_path)
-    cat("Moved file to:", new_path, "\n\n")
+    cat("File processing completed - NOT moving file\n\n")
     
     return(TRUE)
     
