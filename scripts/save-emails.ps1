@@ -2,7 +2,7 @@
 
 function Process-EmailBatch {
     param($sourceFolder, $processedFolder, $namespace)
-    
+    Write-Host "Starting batch"
     # Collect EntryIDs from current batch
     $entryIds = @()
     foreach($mail in $sourceFolder.Items) {
@@ -37,6 +37,7 @@ do {
     $batchCount = Process-EmailBatch -sourceFolder $sourceFolder -processedFolder $processedFolder -namespace $namespace
     $totalProcessed += $batchCount
     Write-Host "Total processed so far: $totalProcessed"
+    Start-Sleep -Seconds 5
 } while ($batchCount -gt 0)
 
 Write-Host "Finished processing $totalProcessed emails total"
