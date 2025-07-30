@@ -2,4 +2,4 @@
 set -euo pipefail
 
 echo "Running email processor..."
-uv run ../process_emails.py
+uv run process_emails.py
