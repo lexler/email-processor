@@ -98,6 +98,7 @@ def move_processed_file(file_path, processed_dir):
 
 def process_single_email(file_path, inbox_path):
     """Process a single email message and extract basic info"""
+    msg = None
     try:
         msg = extract_msg.Message(file_path)
         
@@ -124,18 +125,27 @@ def process_single_email(file_path, inbox_path):
             coding_analysis=parsed_data['coding_analysis']
         )
         
+        # Close the message before moving the file
+        msg.close()
+        msg = None
+        
         # Move file to processed directory
         processed_dir = ensure_processed_directory(inbox_path)
         move_processed_file(file_path, processed_dir)
         
         print("---")
-        
-        msg.close()
         return True
         
     except Exception as e:
         print(f"ERROR processing {os.path.basename(file_path)}: {e}")
         return False
+    finally:
+        # Ensure message is always closed
+        if msg is not None:
+            try:
+                msg.close()
+            except:
+                pass
 
 
 def main(base_path=None):
