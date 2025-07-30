@@ -1,24 +1,43 @@
 # Export emails from Outlook folder to .msg files
 
+function Process-EmailBatch {
+    param($sourceFolder, $processedFolder, $namespace)
+    
+    # Collect EntryIDs from current batch
+    $entryIds = @()
+    foreach($mail in $sourceFolder.Items) {
+        $entryIds += $mail.EntryID
+    }
+    
+    if ($entryIds.Count -eq 0) {
+        return 0
+    }
+    
+    Write-Host "Processing batch of $($entryIds.Count) emails"
+    
+    # Process each email by EntryID
+    foreach($entryId in $entryIds) {
+        $mail = $namespace.GetItemFromID($entryId)
+        $filename = "C:\Users\wilsora3\Documents\PCIT Automated\$($mail.ReceivedTime.ToString('yyyyMMdd_HHmmss')).msg"
+        $mail.SaveAs($filename, 3)  # 3 = MSG format
+        $mail.Move($processedFolder)
+    }
+    
+    return $entryIds.Count
+}
+
 $outlook = New-Object -ComObject Outlook.Application
 $namespace = $outlook.GetNamespace("MAPI")
 $inboxFolderId = 6
 $sourceFolder = $namespace.GetDefaultFolder($inboxFolderId).Folders("PCIT Automatic")
 $processedFolder = $namespace.GetDefaultFolder($inboxFolderId).Folders("PCIT-Processed")
 
-# Collect EntryIDs first to avoid collection modification during iteration
-$entryIds = @()
-foreach($mail in $sourceFolder.Items) {
-    $entryIds += $mail.EntryID
-}
+$totalProcessed = 0
+do {
+    $batchCount = Process-EmailBatch -sourceFolder $sourceFolder -processedFolder $processedFolder -namespace $namespace
+    $totalProcessed += $batchCount
+    Write-Host "Total processed so far: $totalProcessed"
+} while ($batchCount -gt 0)
 
-Write-Host "Found $($entryIds.Count) emails to process"
-
-# Process each email by EntryID
-foreach($entryId in $entryIds) {
-    $mail = $namespace.GetItemFromID($entryId)
-    $filename = "C:\Users\wilsora3\Documents\PCIT Automated\$($mail.ReceivedTime.ToString('yyyyMMdd_HHmmss')).msg"
-    $mail.SaveAs($filename, 3)  # 3 = MSG format
-    $mail.Move($processedFolder)
-}
+Write-Host "Finished processing $totalProcessed emails total"
 
