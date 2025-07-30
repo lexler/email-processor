@@ -50,12 +50,12 @@ def parse_message_content(body):
     }
 
 
-def write_to_csv(file_name, sender, date, questionnaire, homework, coding_analysis, raw_body, csv_file="emails.csv"):
+def write_to_csv(sender, date, questionnaire, homework, coding_analysis, csv_file="emails.csv"):
     """Write email data to CSV file, creating it if it doesn't exist"""
     file_exists = os.path.isfile(csv_file)
     
     with open(csv_file, 'a', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['file_name', 'sender', 'date', 'questionnaire', 'homework', 'coding_analysis', 'raw_body']
+        fieldnames = ['sender', 'date', 'questionnaire', 'homework', 'coding_analysis']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
         if not file_exists:
@@ -63,13 +63,11 @@ def write_to_csv(file_name, sender, date, questionnaire, homework, coding_analys
             print(f"Created new CSV file: {csv_file}")
         
         writer.writerow({
-            'file_name': file_name,
             'sender': sender,
             'date': date,
             'questionnaire': questionnaire,
             'homework': homework,
-            'coding_analysis': coding_analysis,
-            'raw_body': raw_body.replace('\n', ' | ') if raw_body else ''
+            'coding_analysis': coding_analysis
         })
         print(f"Appended to CSV file: {csv_file}")
 
@@ -113,13 +111,11 @@ def process_single_email(file_path, inbox_path):
         
         # Write to CSV
         write_to_csv(
-            file_name=os.path.basename(file_path),
             sender=sender,
             date=received_time.strftime('%Y-%m-%d %H:%M:%S'),
             questionnaire=parsed_data['questionnaire'],
             homework=parsed_data['homework'],
-            coding_analysis=parsed_data['coding_analysis'],
-            raw_body=body
+            coding_analysis=parsed_data['coding_analysis']
         )
         
         # Move file to processed directory
