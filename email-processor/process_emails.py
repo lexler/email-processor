@@ -4,9 +4,13 @@ import os
 import glob
 import csv
 import shutil
+import sys
 from pathlib import Path
 import extract_msg
 from datetime import datetime
+
+# Global base directory - will be set by main()
+BASE_DIRECTORY = None
 
 
 def get_msg_files(inbox_path):
@@ -50,8 +54,10 @@ def parse_message_content(body):
     }
 
 
-def write_to_csv(sender, date, questionnaire, homework, coding_analysis, csv_file="emails.csv"):
+def write_to_csv(sender, date, questionnaire, homework, coding_analysis, csv_file=None):
     """Write email data to CSV file, creating it if it doesn't exist"""
+    if csv_file is None:
+        csv_file = os.path.join(BASE_DIRECTORY, "emails.csv")
     file_exists = os.path.isfile(csv_file)
     
     with open(csv_file, 'a', newline='', encoding='utf-8') as csvfile:
@@ -132,8 +138,17 @@ def process_single_email(file_path, inbox_path):
         return False
 
 
-def main():
-    inbox_path = "../sample_emails"
+def main(base_path=None):
+    global BASE_DIRECTORY
+    
+    # Set base directory from parameter or default to parent directory
+    if base_path:
+        BASE_DIRECTORY = os.path.abspath(base_path)
+    else:
+        BASE_DIRECTORY = os.path.abspath("..")
+    
+    # Base directory contains the emails directly
+    inbox_path = BASE_DIRECTORY
     
     msg_files = get_msg_files(inbox_path)
     if msg_files is None:
@@ -149,4 +164,5 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    base_path = sys.argv[1] if len(sys.argv) > 1 else None
+    exit(main(base_path))

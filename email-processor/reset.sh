@@ -1,25 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Resetting email processor state..."
+# Get base directory from parameter or default to ../sample_emails
+BASE_DIR="${1:-../sample_emails}"
+BASE_DIR=$(realpath "$BASE_DIR")
 
-# Delete CSV file if it exists
-if [ -f "emails.csv" ]; then
-    rm emails.csv
-    echo "Deleted emails.csv"
+echo "Resetting email processor state in: $BASE_DIR"
+
+# Delete CSV file if it exists in base directory
+CSV_FILE="$BASE_DIR/emails.csv"
+if [ -f "$CSV_FILE" ]; then
+    rm "$CSV_FILE"
+    echo "Deleted $CSV_FILE"
 else
-    echo "No emails.csv file found"
+    echo "No emails.csv file found in $BASE_DIR"
 fi
 
-# Move files from processed back to sample_emails
-PROCESSED_DIR="../sample_emails/processed"
-SAMPLE_DIR="../sample_emails"
+# Move files from processed back to base directory
+PROCESSED_DIR="$BASE_DIR/processed"
 
 if [ -d "$PROCESSED_DIR" ]; then
-    # Move all .msg files from processed back to sample_emails
+    # Move all .msg files from processed back to base directory
     if ls "$PROCESSED_DIR"/*.msg 1> /dev/null 2>&1; then
-        mv "$PROCESSED_DIR"/*.msg "$SAMPLE_DIR/"
-        echo "Moved .msg files from processed back to sample_emails"
+        mv "$PROCESSED_DIR"/*.msg "$BASE_DIR/"
+        echo "Moved .msg files from processed back to base directory"
         
         # Remove the processed directory if it's empty
         if [ -z "$(ls -A "$PROCESSED_DIR")" ]; then
